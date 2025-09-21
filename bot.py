@@ -103,24 +103,12 @@ def main_menu(lang="en"):
     ])
     return kb
 
-# ----------------- START (normal) -----------------
-@dp.message(Command("start"))
-async def cmd_start(message: types.Message):
-    async with pool.acquire() as conn:
-        await conn.execute(
-            "INSERT INTO users (tg_id,name,lang) VALUES ($1,$2,'en') "
-            "ON CONFLICT (tg_id) DO UPDATE SET name=EXCLUDED.name",
-            message.from_user.id, message.from_user.full_name
-        )
-    lang = await get_lang(message.from_user.id)
-    await message.answer(TEXTS[lang]["welcome"], reply_markup=main_menu(lang))
-
-# ----------------- START with deep link -----------------
+# ----------------- START with deep link (Buyer Link) -----------------
 @dp.message(CommandStart(deep_link=True))
 async def cmd_start_with_link(message: types.Message, command: CommandStart):
     uid = message.from_user.id
     lang = await get_lang(uid)
-    token = command.args  # parameter nach ?start=
+    token = command.args  # alles nach ?start=
 
     if token and token.startswith("join_"):
         deal_token = token.replace("join_", "")
@@ -140,7 +128,19 @@ async def cmd_start_with_link(message: types.Message, command: CommandStart):
     else:
         await cmd_start(message)
 
-# ----------------- CALLBACK -----------------
+# ----------------- START normal -----------------
+@dp.message(Command("start"))
+async def cmd_start(message: types.Message):
+    async with pool.acquire() as conn:
+        await conn.execute(
+            "INSERT INTO users (tg_id,name,lang) VALUES ($1,$2,'en') "
+            "ON CONFLICT (tg_id) DO UPDATE SET name=EXCLUDED.name",
+            message.from_user.id, message.from_user.full_name
+        )
+    lang = await get_lang(message.from_user.id)
+    await message.answer(TEXTS[lang]["welcome"], reply_markup=main_menu(lang))
+
+# ----------------- CALLBACKS -----------------
 user_states = {}
 
 @dp.callback_query()
@@ -185,7 +185,7 @@ async def cb_all(cq: types.CallbackQuery):
         await cq.answer()
         return
 
-# ----------------- MESSAGE -----------------
+# ----------------- MESSAGES -----------------
 @dp.message()
 async def msg_handler(message: types.Message):
     uid = message.from_user.id
@@ -218,7 +218,7 @@ async def msg_handler(message: types.Message):
             await message.answer(TEXTS[lang]["deal_cancel"].format(token=token))
             return
 
-    # Create deal flow
+    # Deal creation flow
     state = user_states.get(uid)
     if state and state["flow"] == "create":
         if state["step"] == "amount":
