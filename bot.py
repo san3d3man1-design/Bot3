@@ -19,7 +19,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
-pool = None  # Postgres pool
+pool = None
 
 # ----------------- TRANSLATIONS -----------------
 TEXTS = {
@@ -40,24 +40,6 @@ TEXTS = {
         "deal_cancel": "❌ Deal {token} was cancelled.",
         "system_confirms": "The system will confirm automatically once payment is received.",
         "deal_not_found": "❌ Deal not found.",
-    },
-    "uk": {
-        "welcome": "👋 Ласкаво просимо до GiftElf!\nСтворюй безпечні угоди зі мною.",
-        "new_deal": "📄 Нова угода",
-        "my_deals": "🔎 Мої угоди",
-        "change_lang": "🌐 Змінити мову",
-        "ask_amount": "Введіть суму в TON (наприклад 10.5):",
-        "ask_desc": "Введіть опис угоди:",
-        "deal_created": "✅ Угоду створено!",
-        "menu": "Головне меню:",
-        "choose_lang": "Оберіть мову:",
-        "no_deals": "У вас ще немає угод.",
-        "deal_paid": "✅ Платіж за угоду {token} підтверджено.",
-        "deal_received": "📦 Покупець підтвердив отримання за угодою {token}.",
-        "deal_payout": "💸 Виплату за угодою {token} завершено. Сума: {amount} TON (Комісія: {fee} TON).",
-        "deal_cancel": "❌ Угоду {token} скасовано.",
-        "system_confirms": "Система підтвердить автоматично після отримання платежу.",
-        "deal_not_found": "❌ Угоду не знайдено.",
     }
 }
 
@@ -103,12 +85,12 @@ def main_menu(lang="en"):
     ])
     return kb
 
-# ----------------- START with deep link (Buyer Link) -----------------
+# ----------------- START with deep link -----------------
 @dp.message(CommandStart(deep_link=True))
 async def cmd_start_with_link(message: types.Message, command: CommandStart):
     uid = message.from_user.id
     lang = await get_lang(uid)
-    token = command.args  # alles nach ?start=
+    token = command.args
 
     if token and token.startswith("join_"):
         deal_token = token.replace("join_", "")
@@ -165,45 +147,6 @@ async def cb_all(cq: types.CallbackQuery):
         await cq.answer()
         return
 
-    if data == "create_deal":
-        user_states[uid] = {"flow":"create","step":"amount"}
-        lang = await get_lang(uid)
-        await cq.message.answer(TEXTS[lang]["ask_amount"])
-        await cq.answer()
-        return
-
-    if data == "my_deals":
-        lang = await get_lang(uid)
-        async with pool.acquire() as conn:
-            rows = await conn.fetch("SELECT deal_token,amount,description,status FROM deals WHERE seller_id=$1 OR buyer_id=$1", uid)
-        if not rows:
-            await cq.message.answer(TEXTS[lang]["no_deals"])
-        else:
-            for r in rows:
-                await cq.message.answer(
-                    f"Deal {r['deal_token']}\n{r['amount']} TON\n{r['description']}\nStatus: {r['status']}"
-                )
-        await cq.answer()
-        return
-
-    if data == "change_lang":
-        lang = await get_lang(uid)
-        kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="English 🇬🇧", callback_data="setlang:en")],
-            [InlineKeyboardButton(text="Українська 🇺🇦", callback_data="setlang:uk")]
-        ])
-        await cq.message.answer(TEXTS[lang]["choose_lang"], reply_markup=kb)
-        await cq.answer()
-        return
-
-    if data.startswith("setlang:"):
-        new_lang = data.split(":")[1]
-        async with pool.acquire() as conn:
-            await conn.execute("UPDATE users SET lang=$1 WHERE tg_id=$2", new_lang, uid)
-        await cq.message.answer(TEXTS[new_lang]["menu"], reply_markup=main_menu(new_lang))
-        await cq.answer()
-        return
-
 # ----------------- MESSAGES -----------------
 @dp.message()
 async def msg_handler(message: types.Message):
@@ -231,6 +174,8 @@ async def msg_handler(message: types.Message):
                          f"👉 Bitte sende das Gift an den Käufer und bestätige danach unten:",
                     reply_markup=kb
                 )
+            else:
+                await message.answer(f"⚠️ Kein seller_id gefunden für Deal {token}. DB-Zeile: {deal}")
             return
 
         if txt.startswith("/payout "):
@@ -252,7 +197,7 @@ async def msg_handler(message: types.Message):
             await message.answer(TEXTS[lang]["deal_cancel"].format(token=token))
             return
 
-    # Deal creation flow
+    # Deal creation
     state = user_states.get(uid)
     if state and state["flow"] == "create":
         if state["step"] == "amount":
