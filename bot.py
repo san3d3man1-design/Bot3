@@ -24,46 +24,48 @@ pool = None  # Postgres pool
 # ----------------- TRANSLATIONS -----------------
 TEXTS = {
     "en": {
-        "🤖✨ Welcome to *OGuarantBot* – your trusted escrow service.\n\n"
-    "With me you can create *secure deals* for NFTs, gifts, and other digital goods.\n\n"
-    "Provided by @OGUsers 💎\n\n"
-    "Please choose an option below ⬇️",
+        "welcome": (
+            "🤖✨ Welcome to *OGuarantBot* – your trusted escrow service.\n\n"
+            "With me you can create **secure deals** for NFTs, gifts, and other digital goods.\n\n"
+            "💎 Provided by *@OGUsers*"
+        ),
         "new_deal": "📄 New Deal",
         "my_deals": "🔎 My Deals",
         "change_lang": "🌐 Change Language",
-        "ask_amount": "Enter the amount in TON (e.g. 10.5):",
-        "ask_desc": "Enter the deal description:",
-        "deal_created": "✅ Deal created!",
-        "menu": "Main Menu:",
-        "choose_lang": "Choose your language:",
-        "no_deals": "You don’t have any deals yet.",
+        "ask_amount": "💰 Please enter the **amount in TON** for this deal.\n\nExample: `10.5`",
+        "ask_desc": "📝 Great!\n\nNow enter a **short description** of the gift / NFT / service you are selling.",
+        "deal_created": "✅ Deal successfully created!",
+        "menu": "📋 Main Menu:",
+        "choose_lang": "🌐 Please choose your language:",
+        "no_deals": "ℹ️ You don’t have any deals yet.",
         "deal_paid": "✅ Payment for deal {token} confirmed.",
         "deal_received": "📦 Buyer confirmed receipt for deal {token}.",
-        "deal_payout": "💸 Payout for deal {token} has been completed. Amount: {amount} TON (Fee: {fee} TON).",
+        "deal_payout": "💸 Payout for deal {token} completed.\n\nAmount: {amount} TON\nFee: {fee} TON",
         "deal_cancel": "❌ Deal {token} was cancelled.",
-        "system_confirms": "The system will confirm automatically once payment is received.",
-        "deal_not_found": "❌ Deal not found.",
+        "system_confirms": "⏳ The system will confirm automatically once payment is received.",
+        "deal_not_found": "⚠️ Deal not found.",
     },
     "uk": {
-        "🤖✨ Ласкаво просимо до *OGuarantBot* – вашого надійного ескроу-сервісу.\n\n"
-    "Тут ви можете створювати *безпечні угоди* для NFT, подарунків та інших цифрових товарів.\n\n"
-    "Надано @OGUsers 💎\n\n"
-    "Будь ласка, оберіть опцію нижче ⬇️",
+        "welcome": (
+            "🤖✨ Ласкаво просимо до *OGuarantBot* – ваш надійний ескроу сервіс.\n\n"
+            "Тут ви можете створювати **безпечні угоди** для NFT, подарунків та інших цифрових товарів.\n\n"
+            "💎 Надано *@OGUsers*"
+        ),
         "new_deal": "📄 Нова угода",
         "my_deals": "🔎 Мої угоди",
         "change_lang": "🌐 Змінити мову",
-        "ask_amount": "Введіть суму в TON (наприклад 10.5):",
-        "ask_desc": "Введіть опис угоди:",
-        "deal_created": "✅ Угоду створено!",
-        "menu": "Головне меню:",
-        "choose_lang": "Оберіть мову:",
-        "no_deals": "У вас ще немає угод.",
+        "ask_amount": "💰 Введіть **суму в TON** для цієї угоди.\n\nПриклад: `10.5`",
+        "ask_desc": "📝 Чудово!\n\nТепер введіть **короткий опис** подарунка / NFT / послуги, яку ви продаєте.",
+        "deal_created": "✅ Угоду успішно створено!",
+        "menu": "📋 Головне меню:",
+        "choose_lang": "🌐 Будь ласка, оберіть мову:",
+        "no_deals": "ℹ️ У вас ще немає угод.",
         "deal_paid": "✅ Платіж за угоду {token} підтверджено.",
         "deal_received": "📦 Покупець підтвердив отримання за угодою {token}.",
-        "deal_payout": "💸 Виплату за угодою {token} завершено. Сума: {amount} TON (Комісія: {fee} TON).",
+        "deal_payout": "💸 Виплату за угодою {token} завершено.\n\nСума: {amount} TON\nКомісія: {fee} TON",
         "deal_cancel": "❌ Угоду {token} скасовано.",
-        "system_confirms": "Система підтвердить автоматично після отримання платежу.",
-        "deal_not_found": "❌ Угоду не знайдено.",
+        "system_confirms": "⏳ Система підтвердить автоматично після отримання платежу.",
+        "deal_not_found": "⚠️ Угоду не знайдено.",
     }
 }
 
