@@ -34,7 +34,7 @@ TEXTS = {
         "menu": "Main Menu:",
         "choose_lang": "Choose your language:",
         "no_deals": "You don’t have any deals yet.",
-        "deal_paid": "✅ Payment for deal {token} confirmed. Please send the NFT to the buyer.",
+        "deal_paid": "✅ Payment for deal {token} confirmed.",
         "deal_received": "📦 Buyer confirmed receipt for deal {token}.",
         "deal_payout": "💸 Payout for deal {token} has been completed. Amount: {amount} TON (Fee: {fee} TON).",
         "deal_cancel": "❌ Deal {token} was cancelled.",
@@ -52,7 +52,7 @@ TEXTS = {
         "menu": "Головне меню:",
         "choose_lang": "Оберіть мову:",
         "no_deals": "У вас ще немає угод.",
-        "deal_paid": "✅ Платіж за угоду {token} підтверджено. Будь ласка, надішліть NFT покупцю.",
+        "deal_paid": "✅ Платіж за угоду {token} підтверджено.",
         "deal_received": "📦 Покупець підтвердив отримання за угодою {token}.",
         "deal_payout": "💸 Виплату за угодою {token} завершено. Сума: {amount} TON (Комісія: {fee} TON).",
         "deal_cancel": "❌ Угоду {token} скасовано.",
@@ -203,7 +203,7 @@ async def msg_handler(message: types.Message):
                 token = raw_token
 
             async with pool.acquire() as conn:
-                deal = await conn.fetchrow("SELECT seller_id FROM deals WHERE deal_token=$1", token)
+                deal = await conn.fetchrow("SELECT seller_id,buyer_id FROM deals WHERE deal_token=$1", token)
                 await conn.execute("UPDATE deals SET status='paid' WHERE deal_token=$1", token)
 
             await message.answer(TEXTS[lang]["deal_paid"].format(token=token))
@@ -213,16 +213,37 @@ async def msg_handler(message: types.Message):
                 kb = InlineKeyboardMarkup(inline_keyboard=[
                     [InlineKeyboardButton(text="📤 I have sent the Gift", callback_data=f"seller_sent:{token}")]
                 ])
+
+                # Käuferinfo ermitteln
+                buyer_info = None
+                if deal and deal["buyer_id"]:
+                    try:
+                        user = await bot.get_chat(deal["buyer_id"])
+                        if user.username:
+                            buyer_info = f"@{user.username}"
+                        else:
+                            buyer_info = user.full_name
+                    except Exception:
+                        buyer_info = "❓ Unknown Buyer"
+
+                msg_text = (
+                    f"✅ Payment for deal {token} confirmed.\n\n"
+                    f"📦 Please send the NFT to the buyer: {buyer_info}\n\n"
+                    f"🎥 Important: Start a screen recording before you send the NFT.\n"
+                    f"🛟 If there are any issues, contact Support.\n\n"
+                    f"After sending, confirm below ⬇️"
+                )
+
                 try:
                     await bot.send_message(
                         deal["seller_id"],
-                        TEXTS[lang]["deal_paid"].format(token=token),
+                        msg_text,
                         reply_markup=kb
                     )
                 except Exception as e:
-                    await message.answer(f"⚠️ Konnte Verkäufer nicht benachrichtigen: {e}")
+                    await message.answer(f"⚠️ Could not notify seller: {e}")
             else:
-                await message.answer(f"⚠️ Kein seller_id gefunden für Deal {token}. DB-Zeile: {deal}")
+                await message.answer(f"⚠️ No seller_id found for deal {token}. DB row: {deal}")
             return
 
         if txt.startswith("/payout "):
