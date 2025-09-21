@@ -28,18 +28,36 @@ TEXTS = {
         "new_deal": "📄 New Deal",
         "my_deals": "🔎 My Deals",
         "change_lang": "🌐 Change Language",
-        "ask_amount": "Enter the amount in TON (e.g. 10.5):",
-        "ask_desc": "Enter the deal description:",
+        "ask_amount": "💰 Enter the amount in TON (e.g. 10.5):",
+        "ask_desc": "📝 Enter a short description for this deal:",
         "deal_created": "✅ Deal created!",
         "menu": "Main Menu:",
         "choose_lang": "Choose your language:",
-        "no_deals": "You don’t have any deals yet.",
+        "no_deals": "❌ You don’t have any deals yet.",
         "deal_paid": "✅ Payment for deal {token} confirmed.",
         "deal_received": "📦 Buyer confirmed receipt for deal {token}.",
         "deal_payout": "💸 Payout for deal {token} has been completed. Amount: {amount} TON (Fee: {fee} TON).",
         "deal_cancel": "❌ Deal {token} was cancelled.",
         "system_confirms": "The system will confirm automatically once payment is received.",
         "deal_not_found": "❌ Deal not found.",
+    },
+    "uk": {
+        "welcome": "👋 Ласкаво просимо до GiftElf!\nСтворюй безпечні угоди зі мною.",
+        "new_deal": "📄 Нова угода",
+        "my_deals": "🔎 Мої угоди",
+        "change_lang": "🌐 Змінити мову",
+        "ask_amount": "💰 Введіть суму в TON (наприклад 10.5):",
+        "ask_desc": "📝 Введіть короткий опис угоди:",
+        "deal_created": "✅ Угоду створено!",
+        "menu": "Головне меню:",
+        "choose_lang": "Оберіть мову:",
+        "no_deals": "❌ У вас ще немає угод.",
+        "deal_paid": "✅ Платіж за угоду {token} підтверджено.",
+        "deal_received": "📦 Покупець підтвердив отримання за угодою {token}.",
+        "deal_payout": "💸 Виплату за угодою {token} завершено. Сума: {amount} TON (Комісія: {fee} TON).",
+        "deal_cancel": "❌ Угоду {token} скасовано.",
+        "system_confirms": "Система підтвердить автоматично після отримання платежу.",
+        "deal_not_found": "❌ Угоду не знайдено.",
     }
 }
 
@@ -99,8 +117,8 @@ async def cmd_start_with_link(message: types.Message, command: CommandStart):
             deal = await conn.fetchrow("SELECT amount,description,payment_token FROM deals WHERE deal_token=$1", deal_token)
         if deal:
             await message.answer(
-                f"Deal {deal_token}\n{deal['amount']} TON\n{deal['description']}\n\n"
-                f"💰 Wallet: `{BOT_WALLET_ADDRESS}`\n"
+                f"Deal {deal_token}\n💰 {deal['amount']} TON\n📝 {deal['description']}\n\n"
+                f"💳 Wallet: `{BOT_WALLET_ADDRESS}`\n"
                 f"Memo: `{deal['payment_token']}`\n\n"
                 f"{TEXTS[lang]['system_confirms']}",
                 parse_mode="Markdown"
@@ -129,7 +147,9 @@ user_states = {}
 async def cb_all(cq: types.CallbackQuery):
     data = cq.data or ""
     uid = cq.from_user.id
+    lang = await get_lang(uid)
 
+    # Verkäufer klickt "Gift gesendet"
     if data.startswith("seller_sent:"):
         token = data.split(":")[1]
         async with pool.acquire() as conn:
@@ -146,6 +166,45 @@ async def cb_all(cq: types.CallbackQuery):
             )
         await cq.answer()
         return
+
+    # Menü-Buttons
+    if data == "create_deal":
+        user_states[uid] = {"flow": "create", "step": "amount"}
+        await cq.message.answer(TEXTS[lang]["ask_amount"])
+        await cq.answer()
+        return
+
+    if data == "my_deals":
+        async with pool.acquire() as conn:
+            rows = await conn.fetch("SELECT deal_token,amount,description,status FROM deals WHERE seller_id=$1 OR buyer_id=$1", uid)
+        if not rows:
+            await cq.message.answer(TEXTS[lang]["no_deals"])
+        else:
+            for r in rows:
+                await cq.message.answer(
+                    f"Deal {r['deal_token']}\n💰 {r['amount']} TON\n📝 {r['description']}\n📊 Status: {r['status']}"
+                )
+        await cq.answer()
+        return
+
+    if data == "change_lang":
+        kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="English 🇬🇧", callback_data="setlang:en")],
+            [InlineKeyboardButton(text="Українська 🇺🇦", callback_data="setlang:uk")]
+        ])
+        await cq.message.answer(TEXTS[lang]["choose_lang"], reply_markup=kb)
+        await cq.answer()
+        return
+
+    if data.startswith("setlang:"):
+        new_lang = data.split(":")[1]
+        async with pool.acquire() as conn:
+            await conn.execute("UPDATE users SET lang=$1 WHERE tg_id=$2", new_lang, uid)
+        await cq.message.answer(TEXTS[new_lang]["menu"], reply_markup=main_menu(new_lang))
+        await cq.answer()
+        return
+
+    await cq.answer()  # Fallback
 
 # ----------------- MESSAGES -----------------
 @dp.message()
@@ -224,8 +283,10 @@ async def msg_handler(message: types.Message):
                 """, deal_token, uid, message.from_user.full_name, state["amount"], desc, payment_token, int(time.time()))
             user_states.pop(uid, None)
             await message.answer(
-                f"{TEXTS[lang]['deal_created']}\nToken: {deal_token}\nPayment Token: {payment_token}\n\n"
-                f"Buyer Link:\nhttps://t.me/{(await bot.get_me()).username}?start=join_{deal_token}"
+                f"{TEXTS[lang]['deal_created']}\n\n"
+                f"🔑 Token: {deal_token}\n"
+                f"🪙 Payment Token: {payment_token}\n\n"
+                f"👥 Buyer Link:\nhttps://t.me/{(await bot.get_me()).username}?start=join_{deal_token}"
             )
             return
 
