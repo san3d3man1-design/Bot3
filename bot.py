@@ -17,9 +17,14 @@ BOT_WALLET_ADDRESS = os.getenv("BOT_WALLET_ADDRESS", "YOUR_WALLET")
 FEE_PERCENT = Decimal(os.getenv("FEE_PERCENT") or "3.0")
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-bot = Bot(token=BOT_TOKEN, parse_mode="Markdown")
+bot = Bot(token=BOT_TOKEN, parse_mode="MarkdownV2")
 dp = Dispatcher()
 pool = None
+
+# ----------------- ESCAPE FUNCTION -----------------
+def escape_md(text: str) -> str:
+    escape_chars = r"\_*[]()~`>#+-=|{}.!"
+    return "".join("\\"+c if c in escape_chars else c for c in text)
 
 # ----------------- TRANSLATIONS -----------------
 TEXTS = {
@@ -46,30 +51,6 @@ TEXTS = {
         "deal_payout": "💸 *Payout completed!*\n\nDeal: *{token}*\nYou received *{amount} TON* (Fee: {fee} TON).",
         "deal_cancel": "❌ Deal *{token}* has been cancelled by admin.",
         "deal_not_found": "❌ Sorry, this deal was not found.",
-    },
-    "uk": {
-        "welcome": "👋 *Ласкаво просимо до GiftElf!*\n\nТвій бот для безпечних та простих 🎁 угод.\n\nПочни, створивши нову угоду нижче 👇",
-        "new_deal": "📄 Створити нову угоду",
-        "my_deals": "🔎 Мої угоди",
-        "change_lang": "🌐 Змінити мову",
-        "ask_amount": "💰 *Введіть суму угоди в TON* (наприклад `10.5`):",
-        "ask_desc": "📝 *Введіть короткий опис угоди:*",
-        "deal_created": "✅ *Угоду створено!*",
-        "menu": "📍 *Головне меню*",
-        "choose_lang": "🌐 Оберіть мову:",
-        "no_deals": "ℹ️ У вас ще немає угод.",
-        "deal_paid_admin": "✅ Угода *{token}* позначена як *оплачена*. Покупця та продавця повідомлено 🎉",
-        "buyer_paid_msg": "🎉 *Ми отримали ваш платіж!*\n\nПерешліть це повідомлення продавцю, щоб він надіслав 🎁 подарунок.\n\nПісля отримання натисніть кнопку нижче 👇",
-        "btn_received": "📥 Я отримав(ла) подарунок",
-        "btn_sent": "📤 Я надіслав(ла) подарунок",
-        "buyer_received_thanks": "🎁 *Чудово!* Ви підтвердили отримання. Угоду завершено успішно 🎊",
-        "admin_buyer_received": "📦 Покупець підтвердив отримання за угодою *{token}* ✅",
-        "seller_paid_msg": "💰 *Гарні новини!*\n\nПлатіж за угоду *{token}* підтверджено ✅\n\n👉 Будь ласка, надішліть 🎁 подарунок покупцю та підтвердьте нижче:",
-        "seller_sent_ok": "📤 Ви підтвердили, що надіслали подарунок 👍",
-        "buyer_seller_sent": "📦 *Ваш подарунок вже в дорозі!*\n\nПродавець підтвердив відправку.\n\n👉 Підтвердіть нижче, як тільки отримаєте 👇",
-        "deal_payout": "💸 *Виплату завершено!*\n\nУгода: *{token}*\nВи отримали *{amount} TON* (Комісія: {fee} TON).",
-        "deal_cancel": "❌ Угоду *{token}* скасовано адміністратором.",
-        "deal_not_found": "❌ Вибачте, угоду не знайдено.",
     }
 }
 
@@ -129,11 +110,12 @@ async def cmd_start_with_link(message: types.Message, command: CommandStart):
             deal = await conn.fetchrow("SELECT amount,description,payment_token FROM deals WHERE deal_token=$1", deal_token)
         if deal:
             await message.answer(
-                f"🎁 *Deal {deal_token}*\n\n"
-                f"💰 Amount: *{deal['amount']} TON*\n"
-                f"📝 {deal['description']}\n\n"
-                f"💳 Wallet: `{BOT_WALLET_ADDRESS}`\n"
-                f"🔑 Memo: `{deal['payment_token']}`"
+                f"🎁 *Deal {escape_md(deal_token)}*\n\n"
+                f"💰 Amount: *{escape_md(deal['amount'])} TON*\n"
+                f"📝 {escape_md(deal['description'])}\n\n"
+                f"💳 Wallet: `{escape_md(BOT_WALLET_ADDRESS)}`\n"
+                f"🔑 Memo: `{escape_md(deal['payment_token'])}`",
+                parse_mode="MarkdownV2"
             )
         else:
             await message.answer(TEXTS[lang]["deal_not_found"])
@@ -184,7 +166,8 @@ async def cb_all(cq: types.CallbackQuery):
         if ADMIN_ID:
             await bot.send_message(
                 chat_id=ADMIN_ID,
-                text=TEXTS["en"]["admin_buyer_received"].format(token=token)
+                text=TEXTS["en"]["admin_buyer_received"].format(token=escape_md(token)),
+                parse_mode="MarkdownV2"
             )
         await cq.answer()
         return
@@ -203,25 +186,12 @@ async def cb_all(cq: types.CallbackQuery):
         else:
             for r in rows:
                 await cq.message.answer(
-                    f"🔑 Deal: *{r['deal_token']}*\n💰 {r['amount']} TON\n📝 {r['description']}\n📌 Status: *{r['status']}*"
+                    f"🔑 Deal: *{escape_md(r['deal_token'])}*\n"
+                    f"💰 {escape_md(r['amount'])} TON\n"
+                    f"📝 {escape_md(r['description'])}\n"
+                    f"📌 Status: *{escape_md(r['status'])}*",
+                    parse_mode="MarkdownV2"
                 )
-        await cq.answer()
-        return
-
-    if data == "change_lang":
-        kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="English 🇬🇧", callback_data="setlang:en")],
-            [InlineKeyboardButton(text="Українська 🇺🇦", callback_data="setlang:uk")]
-        ])
-        await cq.message.answer(TEXTS[lang]["choose_lang"], reply_markup=kb)
-        await cq.answer()
-        return
-
-    if data.startswith("setlang:"):
-        new_lang = data.split(":")[1]
-        async with pool.acquire() as conn:
-            await conn.execute("UPDATE users SET lang=$1 WHERE tg_id=$2", new_lang, uid)
-        await cq.message.answer(TEXTS[new_lang]["menu"], reply_markup=main_menu(new_lang))
         await cq.answer()
         return
 
@@ -231,63 +201,6 @@ async def msg_handler(message: types.Message):
     uid = message.from_user.id
     txt = message.text.strip()
     lang = await get_lang(uid)
-
-    # Admin commands
-    if uid == ADMIN_ID:
-        if txt.startswith("/paid "):
-            token = txt.split()[1]
-            async with pool.acquire() as conn:
-                deal = await conn.fetchrow("SELECT buyer_id, seller_id FROM deals WHERE deal_token=$1", token)
-                await conn.execute("UPDATE deals SET status='paid' WHERE deal_token=$1", token)
-            await message.answer(TEXTS[lang]["deal_paid_admin"].format(token=token))
-
-            if deal and deal["buyer_id"]:
-                buyer_lang = await get_lang(deal["buyer_id"])
-                kb_buyer = InlineKeyboardMarkup(inline_keyboard=[
-                    [InlineKeyboardButton(text=TEXTS[buyer_lang]["btn_received"], callback_data=f"confirm_received:{token}")]
-                ])
-                await bot.send_message(
-                    chat_id=deal["buyer_id"],
-                    text=TEXTS[buyer_lang]["buyer_paid_msg"],
-                    reply_markup=kb_buyer
-                )
-
-            if deal and deal["seller_id"]:
-                seller_lang = await get_lang(deal["seller_id"])
-                kb_seller = InlineKeyboardMarkup(inline_keyboard=[
-                    [InlineKeyboardButton(text=TEXTS[seller_lang]["btn_sent"], callback_data=f"confirm_sent:{token}")]
-                ])
-                await bot.send_message(
-                    chat_id=deal["seller_id"],
-                    text=TEXTS[seller_lang]["seller_paid_msg"].format(token=token),
-                    reply_markup=kb_seller
-                )
-            return
-
-        if txt.startswith("/payout "):
-            token = txt.split()[1]
-            async with pool.acquire() as conn:
-                deal = await conn.fetchrow("SELECT seller_id, amount FROM deals WHERE deal_token=$1", token)
-                if deal:
-                    amt = Decimal(deal["amount"])
-                    fee = (amt * FEE_PERCENT / 100).quantize(Decimal("0.0000001"))
-                    payout = (amt - fee).quantize(Decimal("0.0000001"))
-                    await conn.execute("UPDATE deals SET status='payout_done' WHERE deal_token=$1", token)
-                    await message.answer(TEXTS[lang]["deal_payout"].format(token=token, amount=payout, fee=fee))
-                    if deal["seller_id"]:
-                        seller_lang = await get_lang(deal["seller_id"])
-                        await bot.send_message(
-                            chat_id=deal["seller_id"],
-                            text=TEXTS[seller_lang]["deal_payout"].format(token=token, amount=payout, fee=fee)
-                        )
-            return
-
-        if txt.startswith("/cancel "):
-            token = txt.split()[1]
-            async with pool.acquire() as conn:
-                await conn.execute("UPDATE deals SET status='cancelled' WHERE deal_token=$1", token)
-            await message.answer(TEXTS[lang]["deal_cancel"].format(token=token))
-            return
 
     # Deal creation
     state = user_states.get(uid)
@@ -307,8 +220,8 @@ async def msg_handler(message: types.Message):
 
         elif state["step"] == "desc":
             desc = txt
-            deal_token = secrets.token_hex(6)  # kurz für Referenz
-            payment_token = f"DEAL-{deal_token}-{secrets.token_hex(4)}"  # lang für Memo
+            deal_token = secrets.token_hex(6)  # kurzer Token
+            payment_token = f"NOKUZ-{deal_token}-{secrets.token_hex(4)}"  # immer NOKUZ!
 
             async with pool.acquire() as conn:
                 await conn.execute("""
@@ -317,19 +230,17 @@ async def msg_handler(message: types.Message):
                 """, deal_token, uid, message.from_user.full_name, state["amount"], desc, payment_token, int(time.time()))
 
             user_states.pop(uid, None)
-
             bot_username = (await bot.get_me()).username
 
             await message.answer(
                 f"{TEXTS[lang]['deal_created']}\n\n"
-                f"🔑 *Deal Token:* `{deal_token}`\n"
-                f"🪙 *Payment Token:* `{payment_token}`\n\n"
-                f"👥 *Share this link with the buyer:*\n"
-                f"https://t.me/{bot_username}?start=join_{deal_token}"
+                f"🔑 Deal Token: `{escape_md(deal_token)}`\n"
+                f"🪙 Payment Token: `{escape_md(payment_token)}`\n\n"
+                f"👥 Share this link with the buyer:\n"
+                f"https://t.me/{escape_md(bot_username)}?start=join_{escape_md(deal_token)}",
+                parse_mode="MarkdownV2"
             )
             return
-
-    await message.answer(TEXTS[lang]["menu"], reply_markup=main_menu(lang))
 
 # ----------------- STARTUP -----------------
 async def main():
