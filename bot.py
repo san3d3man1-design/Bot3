@@ -24,116 +24,46 @@ pool = None  # Postgres pool
 # ----------------- TRANSLATIONS -----------------
 TEXTS = {
     "en": {
-        "welcome": (
-            "🤖✨ Welcome to *OGuarantBot* – your trusted escrow service.\n\n"
-            "With me you can create **secure deals** for NFTs, gifts, and other digital goods.\n\n"
-            "💎 Provided by *@OGUsers*\n\n"
-            "Please choose an option below ⬇️"
-        ),
-        "new_deal": "🆕 Create a New Deal",
-        "my_deals": "📂 My Deals",
-        "change_lang": "🌍 Change Language",
-        "ask_amount": (
-            "💰 Please enter the **amount in TON** for this deal.\n\n"
-            "👉 Example: `10.5`"
-        ),
-        "ask_desc": (
-            "📝 Great!\n\n"
-            "Now enter a **short description** of the gift / NFT / service you are selling."
-        ),
-        "deal_created": (
-            "🎉 Your deal has been **successfully created**!\n\n"
-            "🔑 Deal Token and Payment Info are ready.\n\n"
-            "👥 Share the Buyer Link below with your customer so they can join and pay securely."
-        ),
-        "menu": (
-            "🏠 *Main Menu*\n\n"
-            "Select what you want to do:"
-        ),
-        "choose_lang": "🌍 Please choose your preferred language:",
-        "no_deals": (
-            "📭 You don’t have any deals yet.\n\n"
-            "Start one now using *🆕 Create a New Deal*."
-        ),
-        "deal_paid": (
-            "💸 Payment for deal *{token}* has been **confirmed** ✅"
-        ),
-        "deal_received": (
-            "📦 The buyer has **confirmed receipt** of the gift for deal *{token}*.\n\n"
-            "Funds will now be processed accordingly."
-        ),
-        "deal_payout": (
-            "💵 **Payout completed** for deal *{token}*.\n\n"
-            "Amount sent: *{amount} TON*\n"
-            "Fee: *{fee} TON*"
-        ),
-        "deal_cancel": (
-            "❌ Deal *{token}* has been **cancelled**."
-        ),
-        "system_confirms": (
-            "⏳ Please wait...\n\n"
-            "The system will automatically **confirm** once the payment is received."
-        ),
-        "deal_not_found": (
-            "⚠️ Deal not found.\n\n"
-            "Please check your link or token again."
-        ),
+        "🤖✨ Welcome to *OGuarantBot* – your trusted escrow service.\n\n"
+    "With me you can create *secure deals* for NFTs, gifts, and other digital goods.\n\n"
+    "Provided by @OGUsers 💎\n\n"
+    "Please choose an option below ⬇️",
+        "new_deal": "📄 New Deal",
+        "my_deals": "🔎 My Deals",
+        "change_lang": "🌐 Change Language",
+        "ask_amount": "Enter the amount in TON (e.g. 10.5):",
+        "ask_desc": "Enter the deal description:",
+        "deal_created": "✅ Deal created!",
+        "menu": "Main Menu:",
+        "choose_lang": "Choose your language:",
+        "no_deals": "You don’t have any deals yet.",
+        "deal_paid": "✅ Payment for deal {token} confirmed.",
+        "deal_received": "📦 Buyer confirmed receipt for deal {token}.",
+        "deal_payout": "💸 Payout for deal {token} has been completed. Amount: {amount} TON (Fee: {fee} TON).",
+        "deal_cancel": "❌ Deal {token} was cancelled.",
+        "system_confirms": "The system will confirm automatically once payment is received.",
+        "deal_not_found": "❌ Deal not found.",
     },
     "uk": {
-        "welcome": (
-            "🤖✨ Ласкаво просимо до *OGuarantBot* – вашого надійного ескроу-сервісу.\n\n"
-            "Тут ви можете створювати **безпечні угоди** для NFT, подарунків та інших цифрових товарів.\n\n"
-            "💎 Надано *@OGUsers*\n\n"
-            "Будь ласка, оберіть опцію нижче ⬇️"
-        ),
-        "new_deal": "🆕 Нова угода",
-        "my_deals": "📂 Мої угоди",
-        "change_lang": "🌍 Змінити мову",
-        "ask_amount": (
-            "💰 Введіть **суму в TON** для цієї угоди.\n\n"
-            "👉 Приклад: `10.5`"
-        ),
-        "ask_desc": (
-            "📝 Добре!\n\n"
-            "Тепер введіть **короткий опис** подарунку / NFT / послуги, яку ви продаєте."
-        ),
-        "deal_created": (
-            "🎉 Угоду було **успішно створено**!\n\n"
-            "🔑 Токен угоди та інформація для оплати готові.\n\n"
-            "👥 Поділіться посиланням для покупця, щоб він міг приєднатися та безпечно оплатити."
-        ),
-        "menu": (
-            "🏠 *Головне меню*\n\n"
-            "Оберіть дію:"
-        ),
-        "choose_lang": "🌍 Будь ласка, оберіть мову:",
-        "no_deals": (
-            "📭 У вас ще немає угод.\n\n"
-            "Створіть нову через *🆕 Нова угода*."
-        ),
-        "deal_paid": (
-            "💸 Платіж за угоду *{token}* було **підтверджено** ✅"
-        ),
-        "deal_received": (
-            "📦 Покупець **підтвердив отримання** товару за угодою *{token}*.\n\n"
-            "Кошти будуть оброблені відповідно."
-        ),
-        "deal_payout": (
-            "💵 **Виплату завершено** для угоди *{token}*.\n\n"
-            "Сума: *{amount} TON*\n"
-            "Комісія: *{fee} TON*"
-        ),
-        "deal_cancel": (
-            "❌ Угоду *{token}* було **скасовано**."
-        ),
-        "system_confirms": (
-            "⏳ Будь ласка, зачекайте...\n\n"
-            "Система автоматично **підтвердить** платіж після його отримання."
-        ),
-        "deal_not_found": (
-            "⚠️ Угоду не знайдено.\n\n"
-            "Будь ласка, перевірте посилання або токен ще раз."
-        ),
+        "🤖✨ Ласкаво просимо до *OGuarantBot* – вашого надійного ескроу-сервісу.\n\n"
+    "Тут ви можете створювати *безпечні угоди* для NFT, подарунків та інших цифрових товарів.\n\n"
+    "Надано @OGUsers 💎\n\n"
+    "Будь ласка, оберіть опцію нижче ⬇️",
+        "new_deal": "📄 Нова угода",
+        "my_deals": "🔎 Мої угоди",
+        "change_lang": "🌐 Змінити мову",
+        "ask_amount": "Введіть суму в TON (наприклад 10.5):",
+        "ask_desc": "Введіть опис угоди:",
+        "deal_created": "✅ Угоду створено!",
+        "menu": "Головне меню:",
+        "choose_lang": "Оберіть мову:",
+        "no_deals": "У вас ще немає угод.",
+        "deal_paid": "✅ Платіж за угоду {token} підтверджено.",
+        "deal_received": "📦 Покупець підтвердив отримання за угодою {token}.",
+        "deal_payout": "💸 Виплату за угодою {token} завершено. Сума: {amount} TON (Комісія: {fee} TON).",
+        "deal_cancel": "❌ Угоду {token} скасовано.",
+        "system_confirms": "Система підтвердить автоматично після отримання платежу.",
+        "deal_not_found": "❌ Угоду не знайдено.",
     }
 }
 
@@ -184,7 +114,7 @@ def main_menu(lang="en"):
 async def cmd_start_with_link(message: types.Message, command: CommandStart):
     uid = message.from_user.id
     lang = await get_lang(uid)
-    token = command.args
+    token = command.args  # alles nach ?start=
 
     if token and token.startswith("join_"):
         deal_token = token.replace("join_", "")
@@ -272,8 +202,9 @@ async def msg_handler(message: types.Message):
     if uid == ADMIN_ID:
         if txt.startswith("/paid "):
             raw_token = txt.split()[1]
+            # Falls Payment Token kommt (DEAL-xxxx-xxxx), hole den mittleren Teil
             if raw_token.startswith("DEAL-") and "-" in raw_token:
-                token = raw_token.split("-")[1]
+                token = raw_token.split("-")[1]  # echtes deal_token
             else:
                 token = raw_token
 
@@ -283,11 +214,13 @@ async def msg_handler(message: types.Message):
 
             await message.answer(TEXTS[lang]["deal_paid"].format(token=token))
 
+            # Nachricht an Verkäufer
             if deal and deal["seller_id"]:
                 kb = InlineKeyboardMarkup(inline_keyboard=[
                     [InlineKeyboardButton(text="📤 I have sent the Gift", callback_data=f"seller_sent:{token}")]
                 ])
 
+                # Käuferinfo ermitteln
                 buyer_info = None
                 if deal and deal["buyer_id"]:
                     try:
@@ -300,7 +233,7 @@ async def msg_handler(message: types.Message):
                         buyer_info = "❓ Unknown Buyer"
 
                 msg_text = (
-                    f"✅ Payment for deal *{token}* confirmed.\n\n"
+                    f"✅ Payment for deal {token} confirmed.\n\n"
                     f"📦 Please send the NFT to the buyer: {buyer_info}\n\n"
                     f"🎥 Important: Start a screen recording before you send the NFT.\n"
                     f"🛟 If there are any issues, contact Support.\n\n"
@@ -311,8 +244,7 @@ async def msg_handler(message: types.Message):
                     await bot.send_message(
                         deal["seller_id"],
                         msg_text,
-                        reply_markup=kb,
-                        parse_mode="Markdown"
+                        reply_markup=kb
                     )
                 except Exception as e:
                     await message.answer(f"⚠️ Could not notify seller: {e}")
@@ -366,15 +298,12 @@ async def msg_handler(message: types.Message):
                 """, deal_token, uid, message.from_user.full_name, state["amount"], desc, payment_token, int(time.time()))
             user_states.pop(uid, None)
             await message.answer(
-                f"{TEXTS[lang]['deal_created']}\n\n"
-                f"🔑 Token: `{deal_token}`\n"
-                f"💳 Payment Token: `{payment_token}`\n\n"
-                f"👥 Buyer Link:\nhttps://t.me/{(await bot.get_me()).username}?start=join_{deal_token}",
-                parse_mode="Markdown"
+                f"{TEXTS[lang]['deal_created']}\nToken: {deal_token}\nPayment Token: {payment_token}\n\n"
+                f"Buyer Link:\nhttps://t.me/{(await bot.get_me()).username}?start=join_{deal_token}"
             )
             return
 
-    await message.answer(TEXTS[lang]["menu"], reply_markup=main_menu(lang), parse_mode="Markdown")
+    await message.answer(TEXTS[lang]["menu"], reply_markup=main_menu(lang))
 
 # ----------------- STARTUP -----------------
 async def main():
